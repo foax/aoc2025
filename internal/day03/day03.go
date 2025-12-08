@@ -2,34 +2,51 @@ package day03
 
 import "strconv"
 
-func getMaxJoltage(bank string) int {
+func getMaxJoltage(bank string, batteries int) (total int) {
 	bankInt := make([]int, len(bank))
-	max := []int{0, 0}
-	maxIdx := 0
+	max := make([]int, batteries)
+	maxIdx := make([]int, batteries)
 	for idx, j := range bank {
 		bankInt[idx] = int(j - '0')
-		if idx < len(bank)-1 && bankInt[idx] > max[0] {
-			max[0] = bankInt[idx]
-			maxIdx = idx
+	}
+
+	for b := 0; b < batteries; b++ {
+		var startIdx int
+		if b == 0 {
+			startIdx = 0
+		} else {
+			startIdx = maxIdx[b-1] + 1
+		}
+		endIdx := len(bankInt) - batteries + b
+		// b = 0, len = 15, batteries = 12: 15 - 12 + 0 = 3
+		// b = 11, len = 15, batteries = 12: 15 - 12 + 11 = 14
+		for idx := startIdx; idx <= endIdx; idx++ {
+			if bankInt[idx] > max[b] {
+				max[b] = bankInt[idx]
+				maxIdx[b] = idx
+			}
 		}
 	}
 
-	for idx := maxIdx + 1; idx < len(bankInt); idx++ {
-		if bankInt[idx] > max[1] {
-			max[1] = bankInt[idx]
-		}
+	for _, b := range max {
+		total *= 10
+		total += b
 	}
-	return max[0]*10 + max[1]
+	return
 }
 
 func Part1(input []string) (string, error) {
 	total := 0
 	for _, bank := range input {
-		total += getMaxJoltage(bank)
+		total += getMaxJoltage(bank, 2)
 	}
 	return strconv.Itoa(total), nil
 }
 
 func Part2(input []string) (string, error) {
-	return "Unimplemented", nil
+	total := 0
+	for _, bank := range input {
+		total += getMaxJoltage(bank, 12)
+	}
+	return strconv.Itoa(total), nil
 }
