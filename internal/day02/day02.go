@@ -46,7 +46,32 @@ func nextInvalidId(cur int) int {
 
 func isInvalidId(cur int) bool {
 	curStr := strconv.Itoa(cur)
+	if len(curStr)%2 != 0 {
+		return false
+	}
 	return curStr[0:len(curStr)/2] == curStr[len(curStr)/2:]
+}
+
+func isInvalidIdPart2(id int) bool {
+	idStr := strconv.Itoa(id)
+	if len(idStr) == 1 {
+		return false
+	}
+	for segLength := 1; segLength <= len(idStr)/2; segLength++ {
+		if len(idStr)%segLength != 0 {
+			continue
+		}
+		segment := idStr[0:segLength]
+		var segBuilder strings.Builder
+		segBuilder.Grow(len(idStr))
+		for segCount := 0; segCount < len(idStr)/segLength; segCount++ {
+			segBuilder.WriteString(segment)
+		}
+		if segBuilder.String() == idStr {
+			return true
+		}
+	}
+	return false
 }
 
 func Part1(input []string) (string, error) {
@@ -70,5 +95,20 @@ func Part1(input []string) (string, error) {
 }
 
 func Part2(input []string) (string, error) {
-	return "unimplemented", nil
+	var invalidIds []int
+	for _, r := range strings.Split(input[0], ",") {
+		idStrs := strings.Split(r, "-")
+		low, _ := strconv.Atoi(idStrs[0])
+		high, _ := strconv.Atoi(idStrs[1])
+		for x := low; x <= high; x++ {
+			if isInvalidIdPart2(x) {
+				invalidIds = append(invalidIds, x)
+			}
+		}
+	}
+	sum := 0
+	for _, n := range invalidIds {
+		sum += n
+	}
+	return fmt.Sprintf("%d", sum), nil
 }
