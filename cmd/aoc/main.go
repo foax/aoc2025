@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/foax/aoc2025/internal/day01"
+	"github.com/foax/aoc2025/internal/day02"
 )
 
 var days = map[int]struct {
@@ -17,6 +18,7 @@ var days = map[int]struct {
 	Part2 func([]string) (string, error)
 }{
 	1: {day01.Part1, day01.Part2},
+	2: {day02.Part1, day02.Part2},
 }
 
 func main() {
