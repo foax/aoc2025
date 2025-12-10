@@ -14,6 +14,7 @@ import (
 	"github.com/foax/aoc2025/internal/day03"
 	"github.com/foax/aoc2025/internal/day04"
 	"github.com/foax/aoc2025/internal/day05"
+	"github.com/foax/aoc2025/internal/day06"
 )
 
 var days = map[int]struct {
@@ -25,6 +26,7 @@ var days = map[int]struct {
 	3: {day03.Part1, day03.Part2},
 	4: {day04.Part1, day04.Part2},
 	5: {day05.Part1, day05.Part2},
+	6: {day06.Part1, day06.Part2},
 }
 
 func main() {
