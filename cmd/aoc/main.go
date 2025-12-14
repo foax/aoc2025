@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 	"strconv"
@@ -18,6 +19,11 @@ import (
 	"github.com/foax/aoc2025/internal/day07"
 	"github.com/foax/aoc2025/internal/day08"
 	"github.com/foax/aoc2025/internal/day09"
+)
+
+const (
+	input_directory = "input"
+	aoc_edition     = "aoc2025"
 )
 
 var days = map[int]struct {
@@ -57,49 +63,67 @@ func main() {
 	}))
 	slog.SetDefault(logger)
 
-	slog.Info("Start", "loglevel", logLevel)
+	slog.Info("Start", "aoc", aoc_edition, "section", "main", "loglevel", logLevel)
 	defer slog.Info("End")
-	slog.Debug("flag args", "args", flag.Args())
+	slog.Debug("flag args", "aoc", aoc_edition, "section", "main", "args", flag.Args())
 
 	args := flag.Args()
 	if len(args) == 0 {
-		slog.Error("No day argument passed on the command line")
+		slog.Error("No day argument passed on the command line", "aoc", aoc_edition, "section", "main")
+		os.Exit(1)
+	}
+	dayNum, err := strconv.Atoi(args[0])
+	if err != nil {
+		slog.Error("Invalid day argument passed on the command line", "aoc", aoc_edition, "section", "main", "arg", args[0], "error", err)
+		os.Exit(1)
+	}
+	day, ok := days[dayNum]
+	if !ok {
+		slog.Error("No solution implemented for requested day", "aoc", aoc_edition, "section", "main", "day", dayNum)
 		os.Exit(1)
 	}
 
+	var reader io.Reader
+	info, err := os.Stdin.Stat()
+	if err != nil {
+		slog.Error("Error checking stdin", "aoc", aoc_edition, "section", "main", "error", err)
+		os.Exit(1)
+	}
+	if (info.Mode() & os.ModeCharDevice) == 0 {
+		slog.Info("Reading input from stdin", "aoc", aoc_edition, "section", "main")
+		reader = os.Stdin
+	} else {
+		slog.Debug("stdin is a terminal (no piped input)", "aoc", aoc_edition, "section", "main")
+		filename := fmt.Sprintf("%s/day%02d.txt", input_directory, dayNum)
+		reader, err = os.Open(filename)
+		if err != nil {
+			slog.Error("Error opening input file", "aoc", aoc_edition, "section", "main", "filename", filename, "error", err)
+			os.Exit(1)
+		}
+		slog.Info("Reading input from input file", "aoc", aoc_edition, "section", "main", "filename", filename)
+	}
+	scanner := bufio.NewScanner(reader)
+
 	var input []string
-	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
 		input = append(input, scanner.Text())
 	}
-	slog.Debug("Lines of input read", "lines", len(input))
+	slog.Debug("Lines of input read", "aoc", aoc_edition, "section", "main", "lines", len(input))
 
-	dayNum, err := strconv.Atoi(args[0])
-	if err != nil {
-		slog.Error("Invalid day argument passed on the command line", "arg", args[0], "error", err)
-		os.Exit(1)
-	}
-
-	day, ok := days[dayNum]
-	if !ok {
-		slog.Error("No solution implemented for requested day", "day", dayNum)
-		os.Exit(1)
-	}
-
-	slog.Info("Solving", "day", dayNum, "part", 1)
+	slog.Info("Solving", "aoc", aoc_edition, "section", "main", "day", dayNum, "part", 1)
 	part1Result, err := day.Part1(input)
 	if err != nil {
-		slog.Error("Error solving Part 1", "day", dayNum, "error", err)
+		slog.Error("Error solving", "aoc", aoc_edition, "section", "main", "day", dayNum, "part", 1, "error", err)
 		os.Exit(1)
 	}
-	slog.Info("Result", "part", 1, "result", part1Result)
+	slog.Info("Result", "aoc", aoc_edition, "section", "main", "part", 1, "result", part1Result)
 
-	slog.Info("Solving", "day", dayNum, "part", 2)
+	slog.Info("Solving", "aoc", aoc_edition, "section", "main", "day", dayNum, "part", 2)
 	part2Result, err := day.Part2(input)
 	if err != nil {
-		slog.Error("Error solving Part 2", "day", dayNum, "error", err)
+		slog.Error("Error solving Part 2", "aoc", aoc_edition, "section", "main", "day", dayNum, "error", err)
 		os.Exit(1)
 	}
-	slog.Info("Result", "part", 2, "result", part2Result)
+	slog.Info("Result", "aoc", aoc_edition, "section", "main", "part", 2, "result", part2Result)
 }
