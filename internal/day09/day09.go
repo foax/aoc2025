@@ -3,17 +3,9 @@ package day09
 import (
 	"fmt"
 	"log/slog"
+	"sort"
 	"strconv"
 	"strings"
-)
-
-const (
-	Reset  = "\033[0m"
-	Bold   = "\033[1m"
-	Dim    = "\033[2m"
-	Red    = "\033[31m"
-	Green  = "\033[32m"
-	Yellow = "\033[33m"
 )
 
 type coord struct {
@@ -21,12 +13,9 @@ type coord struct {
 	col int
 }
 
-func colourStr(s, c string) string {
-	x := c + s
-	if c != "" {
-		x += Reset
-	}
-	return x
+type line struct {
+	start coord
+	end   coord
 }
 
 func stringToCoord(s string) (c coord) {
@@ -68,155 +57,104 @@ func area(i, j coord) int {
 	return height(i, j) * width(i, j)
 }
 
-func addCoord(i, j coord) (newCoord coord) {
-	newCoord.row = i.row + j.row
-	newCoord.col = i.col + j.col
-	return
+func getLinesForBox(x, y coord) [4]line {
+	var minRow, minCol, maxRow, maxCol int
+	minRow = x.row
+	maxRow = x.row
+	minCol = x.col
+	maxCol = x.col
+	if y.row < minRow {
+		minRow = y.row
+	}
+	if y.row > maxRow {
+		maxRow = y.row
+	}
+	if y.col < minCol {
+		minCol = y.col
+	}
+	if y.col > maxCol {
+		maxCol = y.col
+	}
+	lines := [4]line{
+		{coord{minRow, minCol}, coord{minRow, maxCol}},
+		{coord{maxRow, minCol}, coord{maxRow, maxCol}},
+		{coord{minRow, minCol}, coord{maxRow, minCol}},
+		{coord{minRow, maxCol}, coord{maxRow, maxCol}},
+	}
+	return lines
 }
 
-func printGrid(grid [][]rune) {
-	for _, line := range grid {
-		fmt.Println(string(line))
-	}
-}
-
-func printGridFillLoop(grid [][]rune, queue []coord, visited map[coord]struct{}, p coord) {
-	queuedMap := make(map[coord]struct{})
-	for _, p := range queue {
-		queuedMap[p] = struct{}{}
-	}
-
-	for r := range grid {
-		line := ""
-		for c, x := range grid[r] {
-			colour := ""
-			if _, ok := visited[coord{r, c}]; !ok {
-				colour += Dim
-			}
-			if _, ok := queuedMap[coord{r, c}]; ok {
-				colour += Yellow
-			} else if x == '#' {
-				colour += Green
-			} else if x == 'X' {
-				colour += Red
-			}
-			if p.row == r && p.col == c {
-				colour += Bold
-			}
-			line += colourStr(string(x), colour)
+func sortedLine(l line) line {
+	a := l
+	if l.start.row == l.end.row {
+		if l.start.col > l.end.col {
+			a.start = l.end
+			a.end = l.start
 		}
-		fmt.Println(string(line))
+	} else if l.start.row > l.end.row {
+		a.start = l.end
+		a.end = l.start
 	}
+	return a
 }
 
-func minInt(x, y int) int {
-	if x < y {
-		return x
+func linesIntersect(x, y line) bool {
+	a := sortedLine(x)
+	b := sortedLine(y)
+	if a.start.row == a.end.row {
+		// a is horizontal
+		if b.start.col == b.end.col {
+			// b is vertical
+			if b.start.col >= a.start.col && b.start.col <= a.end.col &&
+				a.start.row >= b.start.row && a.start.row <= b.end.row {
+				return true
+			}
+		}
 	} else {
-		return y
+		// a is vertical
+		if b.start.row == b.end.row {
+			// y is horizontal
+			if a.start.col >= b.start.col && a.start.col <= b.end.col &&
+				b.start.row >= a.start.row && b.start.row <= a.end.row {
+				return true
+			}
+		}
 	}
+	return false
 }
 
-func maxInt(x, y int) int {
-	if x < y {
-		return y
+func findIntersectingLines(x line, hLineMap map[int][]line, vLineMap map[int][]line) bool {
+	if x.start.row == x.end.row {
+		// x is horizontal
+		for col := x.start.col; col <= x.end.col; col++ {
+			if vLines, ok := vLineMap[col]; ok {
+				for _, v := range vLines {
+					if v.start.row <= x.start.row {
+						if v.end.row >= x.start.row {
+							return true
+						}
+					} else {
+						continue
+					}
+				}
+			}
+		}
 	} else {
-		return x
-	}
-}
-
-func checkBoundaries(grid [][]bool, i, j coord) bool {
-	minRow := minInt(i.row, j.row)
-	minCol := minInt(i.col, j.col)
-	maxRow := maxInt(i.row, j.row)
-	maxCol := maxInt(i.col, j.col)
-	for c := minCol; c <= maxCol; c++ {
-		if !grid[minRow][c] || !grid[maxRow][c] {
-			return false
-		}
-	}
-	for r := minRow; r <= maxRow; r++ {
-		if !grid[r][minCol] || !grid[r][maxCol] {
-			return false
-		}
-	}
-	return true
-}
-
-func addToQueue(queue []coord, queued map[coord]struct{}, coords ...coord) []coord {
-	for _, c := range coords {
-		if _, ok := queued[c]; !ok {
-			queue = append(queue, c)
-			queued[c] = struct{}{}
-		}
-	}
-	return queue
-}
-
-func fillLoop(grid [][]bool) {
-	rows := len(grid)
-	cols := len(grid[0])
-	visited := make(map[coord]struct{})
-
-	dirs := []coord{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}
-	queue := []coord{}
-	queued := make(map[coord]struct{})
-
-	for c := range cols {
-		queue = addToQueue(queue, queued, coord{0, c}, coord{rows - 1, c})
-	}
-	for r := range rows {
-		queue = addToQueue(queue, queued, coord{r, 0}, coord{r, cols - 1})
-	}
-
-	for len(queue) > 0 {
-		p := queue[0]
-		queue = queue[1:]
-		delete(queued, p)
-
-		if len(visited)%10000000 == 0 {
-			slog.Debug("fillLoop", "queueLen", len(queue), "visited", len(visited), "p", p)
-			// printGridFillLoop(grid, queue, visited, p)
-		}
-
-		if p.row < 0 || p.row >= rows || p.col < 0 || p.col >= cols {
-			// slog.Debug("fillLoop", "msg", "out of bounds", "p", p)
-			continue
-		}
-		if grid[p.row][p.col] {
-			// slog.Debug("fillLoop", "msg", "grid boundary", "p", p)
-			continue
-		}
-		if _, ok := visited[p]; ok {
-			// slog.Debug("fillLoop", "msg", "already visited", "p", p)
-			continue
-		}
-
-		visited[p] = struct{}{}
-
-		for _, d := range dirs {
-			newP := coord{p.row + d.row, p.col + d.col}
-			if newP.row < 0 || newP.row >= rows || newP.col < 0 || newP.col >= cols {
-				continue
-			}
-			if _, ok := visited[newP]; ok {
-				continue
-			}
-			if _, ok := queued[newP]; ok {
-				continue
-			}
-
-			queue = addToQueue(queue, queued, newP)
-		}
-	}
-
-	for r := range rows {
-		for c := range cols {
-			if _, ok := visited[coord{r, c}]; !ok && !grid[r][c] {
-				grid[r][c] = true
+		for row := x.start.row; row <= x.end.row; row++ {
+			if hLines, ok := hLineMap[row]; ok {
+				for _, h := range hLines {
+					if h.start.col <= x.start.col {
+						if h.end.col >= x.start.col {
+							return true
+						}
+					} else {
+						continue
+					}
+				}
 			}
 		}
 	}
+	return false
 }
 
 func Part1(input []string) (string, error) {
@@ -233,102 +171,151 @@ func Part1(input []string) (string, error) {
 	return fmt.Sprintf("%d", maxArea), nil
 }
 
+func lineHeading(l line) coord {
+	if l.start.row == l.end.row {
+		if l.start.col < l.end.col {
+			return coord{0, 1}
+		} else {
+			return coord{0, -1}
+		}
+	} else {
+		if l.start.row < l.end.row {
+			return coord{1, 0}
+		} else {
+			return coord{-1, 0}
+		}
+	}
+}
+
+func isHorizontal(l line) bool {
+	return lineHeading(l).row == 0
+}
+
+func isForwards(l line) bool {
+	h := lineHeading(l)
+	var x int
+	if h.row == 0 {
+		x = h.col
+	} else {
+		x = h.row
+	}
+	return x == 1
+}
+
+func createBorderLines(coords []coord) []line {
+	lines := []line{}
+	minCoord := coords[0]
+	minIdx := 0
+	for i, c := range coords {
+		if c.row <= minCoord.row && c.col < minCoord.col {
+			minCoord = c
+			minIdx = i
+		}
+	}
+
+	start := coord{minCoord.row - 1, minCoord.col - 1}
+	for idx := minIdx; len(lines) < len(coords); idx++ {
+		i := idx % len(coords)
+		j := (idx + 1) % len(coords)
+		k := (idx + 2) % len(coords)
+		edgeLine := line{coords[i], coords[j]}
+		nextEdgeLine := line{coords[j], coords[k]}
+		var newLineShort, newLineLong line
+		if len(lines) > 0 {
+			newLineShort.start = lines[len(lines)-1].end
+		} else {
+			newLineShort.start = start
+		}
+		newLineLong.start = newLineShort.start
+		if isHorizontal(edgeLine) {
+			newLineShort.end = coord{row: newLineShort.start.row}
+			newLineLong.end = newLineShort.end
+			if isForwards(edgeLine) {
+				newLineShort.end.col = coords[j].col - 1
+				newLineLong.end.col = coords[j].col + 1
+			} else {
+				newLineShort.end.col = coords[j].col + 1
+				newLineLong.end.col = coords[j].col - 1
+			}
+		} else {
+			newLineShort.end = coord{col: newLineShort.start.col}
+			newLineLong.end = newLineShort.end
+			if isForwards(edgeLine) {
+				newLineShort.end.row = coords[j].row - 1
+				newLineLong.end.row = coords[j].row + 1
+			} else {
+				newLineShort.end.row = coords[j].row + 1
+				newLineLong.end.row = coords[j].row - 1
+			}
+		}
+		if linesIntersect(newLineLong, nextEdgeLine) {
+			lines = append(lines, newLineShort)
+		} else {
+			lines = append(lines, newLineLong)
+		}
+	}
+	return lines
+}
+
 func Part2(input []string) (string, error) {
 	coords := parseCoords(input)
-	minCoord := coords[0]
-	maxCoord := coords[0]
-	for _, c := range coords {
-		if c.row < minCoord.row {
-			minCoord.row = c.row
-		}
-		if c.col < minCoord.col {
-			minCoord.col = c.col
-		}
-		if c.row > maxCoord.row {
-			maxCoord.row = c.row
-		}
-		if c.col > maxCoord.col {
-			maxCoord.col = c.col
-		}
-	}
-	slog.Debug("part 2", "minCoord", minCoord, "maxCoord", maxCoord)
+	borderLines := createBorderLines(coords)
+	slog.Debug("part 2", "msg", "borderLines created", "len", len(borderLines))
 
-	for i := range coords {
-		coords[i].row -= minCoord.row
-		coords[i].col -= minCoord.col
-	}
-
-	grid := make([][]bool, maxCoord.row-minCoord.row+1)
-	for i := range grid {
-		grid[i] = make([]bool, maxCoord.col-minCoord.col+1)
-		for j := range grid[i] {
-			grid[i][j] = false
-		}
-	}
-	slog.Debug("part 2", "msg", "grid initialised")
-
-	for i := range coords {
-		grid[coords[i].row][coords[i].col] = true
-		j := i + 1
-		if j == len(coords) {
-			j = 0
-		}
-
-		vector := coord{0, 0}
-		if coords[i].row != coords[j].row {
-			if coords[i].row < coords[j].row {
-				vector.row = 1
-			} else {
-				vector.row = -1
+	horizontalLines := make(map[int][]line)
+	verticalLines := make(map[int][]line)
+	for _, l := range borderLines {
+		l = sortedLine(l)
+		if isHorizontal(l) {
+			if _, ok := horizontalLines[l.start.row]; !ok {
+				horizontalLines[l.start.row] = []line{}
 			}
-		}
-		if coords[i].col != coords[j].col {
-			if coords[i].col < coords[j].col {
-				vector.col = 1
-			} else {
-				vector.col = -1
+			horizontalLines[l.start.row] = append(horizontalLines[l.start.row], l)
+		} else {
+			if _, ok := verticalLines[l.start.col]; !ok {
+				verticalLines[l.start.col] = []line{}
 			}
-		}
-
-		for c := addCoord(coords[i], vector); c != coords[j]; c = addCoord(c, vector) {
-			grid[c.row][c.col] = true
+			verticalLines[l.start.col] = append(verticalLines[l.start.col], l)
 		}
 	}
-	slog.Debug("part 2", "msg", "grid borders added")
+	slog.Debug("part 2", "msg", "horizontal and vertical lines grouped")
 
-	// for i := range grid {
-	// 	inside := false
-	// 	for j := range grid[i] {
-	// 		if !inside {
-	// 			if grid[i][j] != '.' {
-	// 				inside = true
-	// 			}
-	// 		} else {
-	// 			if grid[i][j] == '.' {
-	// 				grid[i][j] = 'X'
-	// 			} else {
-	// 				break
-	// 			}
-	// 		}
-	// 	}
-	// }
-	fillLoop(grid)
-	slog.Debug("part 2", "msg", "grid borders filled")
+	for idx := range horizontalLines {
+		sort.Slice(horizontalLines[idx], func(i, j int) bool {
+			return horizontalLines[idx][i].start.col < horizontalLines[idx][j].start.col
+		})
+	}
+	slog.Debug("part 2", "msg", "horizontalLines sorted")
 
-	// printGrid(grid)
+	for idx := range verticalLines {
+		sort.Slice(verticalLines[idx], func(i, j int) bool {
+			return verticalLines[idx][i].start.row < verticalLines[idx][j].start.row
+		})
+	}
+	slog.Debug("part 2", "msg", "verticalLines sorted")
 
 	maxArea := 0
-	for i := 0; i < len(coords)-1; i++ {
-		slog.Debug("part 2", "i", i)
+	for i := range coords {
+		if i == len(coords)-1 {
+			break
+		}
 		for j := i + 1; j < len(coords); j++ {
-			if !checkBoundaries(grid, coords[i], coords[j]) {
-				continue
+			lines := getLinesForBox(coords[i], coords[j])
+			intersecting := false
+			for _, l := range lines {
+				if findIntersectingLines(l, horizontalLines, verticalLines) {
+					intersecting = true
+					break
+				}
 			}
-			area := area(coords[i], coords[j])
-			if area > maxArea {
-				maxArea = area
+			if !intersecting {
+				area := area(coords[i], coords[j])
+				if area > maxArea {
+					maxArea = area
+				}
 			}
 		}
 	}
+
 	return fmt.Sprintf("%d", maxArea), nil
 }
