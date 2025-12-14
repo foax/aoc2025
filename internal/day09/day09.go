@@ -18,6 +18,8 @@ type line struct {
 	end   coord
 }
 
+// stringToCoord converts a string in the format of "x,y" to a coord struct
+// coord{row: y, col: x}. Returns the converted coord
 func stringToCoord(s string) (c coord) {
 	strSlice := strings.Split(s, ",")
 	col, _ := strconv.Atoi(strSlice[0])
@@ -27,6 +29,8 @@ func stringToCoord(s string) (c coord) {
 	return
 }
 
+// parseCoords parses a list of coordinate strings.
+// Returns a slice of coord structs.
 func parseCoords(input []string) (coords []coord) {
 	coords = make([]coord, len(input))
 	for i, c := range input {
@@ -35,8 +39,9 @@ func parseCoords(input []string) (coords []coord) {
 	return
 }
 
-func width(i, j coord) int {
-	w := i.col - j.col
+// width returns the width of the tiles between a and b
+func width(a, b coord) int {
+	w := a.col - b.col
 	if w < 0 {
 		w = -w
 	}
@@ -44,8 +49,9 @@ func width(i, j coord) int {
 	return w
 }
 
-func height(i, j coord) int {
-	h := i.row - j.row
+// height returns the height of the tiles between i and j
+func height(a, b coord) int {
+	h := a.row - b.row
 	if h < 0 {
 		h = -h
 	}
@@ -53,84 +59,99 @@ func height(i, j coord) int {
 	return h
 }
 
-func area(i, j coord) int {
-	return height(i, j) * width(i, j)
+// area returns the area of the tiles in the rectangle with corners a and b
+func area(a, b coord) int {
+	return height(a, b) * width(a, b)
 }
 
-func getLinesForBox(x, y coord) [4]line {
+// getLinesForBox returns the lines that make up the border of the rectangle
+// with corners a and b.
+func getLinesForBox(a, b coord) []line {
 	var minRow, minCol, maxRow, maxCol int
-	minRow = x.row
-	maxRow = x.row
-	minCol = x.col
-	maxCol = x.col
-	if y.row < minRow {
-		minRow = y.row
+	minRow = a.row
+	maxRow = a.row
+	minCol = a.col
+	maxCol = a.col
+	if b.row < minRow {
+		minRow = b.row
 	}
-	if y.row > maxRow {
-		maxRow = y.row
+	if b.row > maxRow {
+		maxRow = b.row
 	}
-	if y.col < minCol {
-		minCol = y.col
+	if b.col < minCol {
+		minCol = b.col
 	}
-	if y.col > maxCol {
-		maxCol = y.col
+	if b.col > maxCol {
+		maxCol = b.col
 	}
-	lines := [4]line{
-		{coord{minRow, minCol}, coord{minRow, maxCol}},
-		{coord{maxRow, minCol}, coord{maxRow, maxCol}},
-		{coord{minRow, minCol}, coord{maxRow, minCol}},
-		{coord{minRow, maxCol}, coord{maxRow, maxCol}},
+
+	linesSet := map[line]struct{}{}
+	linesSet[line{coord{minRow, minCol}, coord{minRow, maxCol}}] = struct{}{}
+	linesSet[line{coord{maxRow, minCol}, coord{maxRow, maxCol}}] = struct{}{}
+	linesSet[line{coord{minRow, minCol}, coord{maxRow, minCol}}] = struct{}{}
+	linesSet[line{coord{minRow, maxCol}, coord{maxRow, maxCol}}] = struct{}{}
+
+	lines := []line{}
+	for l := range linesSet {
+		if l.start != l.end {
+			lines = append(lines, l)
+		}
 	}
 	return lines
 }
 
+// sortedLine sorts the coords in the line so that the upper left coord
+// comes first in the list.
 func sortedLine(l line) line {
-	a := l
+	sorted := l
 	if l.start.row == l.end.row {
 		if l.start.col > l.end.col {
-			a.start = l.end
-			a.end = l.start
+			sorted.start = l.end
+			sorted.end = l.start
 		}
 	} else if l.start.row > l.end.row {
-		a.start = l.end
-		a.end = l.start
+		sorted.start = l.end
+		sorted.end = l.start
 	}
-	return a
+	return sorted
 }
 
-func linesIntersect(x, y line) bool {
-	a := sortedLine(x)
-	b := sortedLine(y)
-	if a.start.row == a.end.row {
-		// a is horizontal
-		if b.start.col == b.end.col {
-			// b is vertical
-			if b.start.col >= a.start.col && b.start.col <= a.end.col &&
-				a.start.row >= b.start.row && a.start.row <= b.end.row {
-				return true
-			}
-		}
-	} else {
-		// a is vertical
-		if b.start.row == b.end.row {
-			// y is horizontal
-			if a.start.col >= b.start.col && a.start.col <= b.end.col &&
-				b.start.row >= a.start.row && b.start.row <= a.end.row {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-func findIntersectingLines(x line, hLineMap map[int][]line, vLineMap map[int][]line) bool {
+// linesIntersect returns true if the line a and b intersect.
+func linesIntersect(a, b line) bool {
+	x := sortedLine(a)
+	y := sortedLine(b)
 	if x.start.row == x.end.row {
 		// x is horizontal
-		for col := x.start.col; col <= x.end.col; col++ {
+		if y.start.col == y.end.col {
+			// y is vertical
+			if y.start.col >= x.start.col && y.start.col <= x.end.col &&
+				x.start.row >= y.start.row && x.start.row <= y.end.row {
+				return true
+			}
+		}
+	} else {
+		// x is vertical
+		if y.start.row == y.end.row {
+			// y is horizontal
+			if x.start.col >= y.start.col && x.start.col <= y.end.col &&
+				y.start.row >= x.start.row && y.start.row <= x.end.row {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// findIntersectingLines check if l intersects with any horizontal or vertical lines
+// in hLineMap and vLineMap. Returns true if l intersects.
+func findIntersectingLines(l line, hLineMap map[int][]line, vLineMap map[int][]line) bool {
+	if l.start.row == l.end.row {
+		// l is horizontal
+		for col := l.start.col; col <= l.end.col; col++ {
 			if vLines, ok := vLineMap[col]; ok {
 				for _, v := range vLines {
-					if v.start.row <= x.start.row {
-						if v.end.row >= x.start.row {
+					if v.start.row <= l.start.row {
+						if v.end.row >= l.start.row {
 							return true
 						}
 					} else {
@@ -140,11 +161,12 @@ func findIntersectingLines(x line, hLineMap map[int][]line, vLineMap map[int][]l
 			}
 		}
 	} else {
-		for row := x.start.row; row <= x.end.row; row++ {
+		// l is vertical
+		for row := l.start.row; row <= l.end.row; row++ {
 			if hLines, ok := hLineMap[row]; ok {
 				for _, h := range hLines {
-					if h.start.col <= x.start.col {
-						if h.end.col >= x.start.col {
+					if h.start.col <= l.start.col {
+						if h.end.col >= l.start.col {
 							return true
 						}
 					} else {
@@ -157,20 +179,7 @@ func findIntersectingLines(x line, hLineMap map[int][]line, vLineMap map[int][]l
 	return false
 }
 
-func Part1(input []string) (string, error) {
-	coords := parseCoords(input)
-	maxArea := 0
-	for i := 0; i < len(coords)-1; i++ {
-		for j := i + 1; j < len(coords); j++ {
-			area := area(coords[i], coords[j])
-			if area > maxArea {
-				maxArea = area
-			}
-		}
-	}
-	return fmt.Sprintf("%d", maxArea), nil
-}
-
+// lineHeading returns a coord indicating the direction the line l is heading in
 func lineHeading(l line) coord {
 	if l.start.row == l.end.row {
 		if l.start.col < l.end.col {
@@ -187,10 +196,12 @@ func lineHeading(l line) coord {
 	}
 }
 
+// isHorizontal returns if a line is horizontal
 func isHorizontal(l line) bool {
 	return lineHeading(l).row == 0
 }
 
+// isForwards returns if a line is heading in a positive direction
 func isForwards(l line) bool {
 	h := lineHeading(l)
 	var x int
@@ -202,8 +213,13 @@ func isForwards(l line) bool {
 	return x == 1
 }
 
+// createBorderLines creates a list of lines that forms a perimeter around
+// the tile loop formed by linking all tiles in coords.
 func createBorderLines(coords []coord) []line {
 	lines := []line{}
+
+	// find the upper-leftmost coord in the list as our starting point
+	// so we know we're starting on the outside of the loop
 	minCoord := coords[0]
 	minIdx := 0
 	for i, c := range coords {
@@ -212,14 +228,18 @@ func createBorderLines(coords []coord) []line {
 			minIdx = i
 		}
 	}
-
 	start := coord{minCoord.row - 1, minCoord.col - 1}
+
 	for idx := minIdx; len(lines) < len(coords); idx++ {
 		i := idx % len(coords)
 		j := (idx + 1) % len(coords)
 		k := (idx + 2) % len(coords)
 		edgeLine := line{coords[i], coords[j]}
 		nextEdgeLine := line{coords[j], coords[k]}
+
+		// create two lines, a short one and a long one. Either the next
+		// edge will get in the way of the border, in which case it will
+		// intersect with the long line. If it does, use the short line.
 		var newLineShort, newLineLong line
 		if len(lines) > 0 {
 			newLineShort.start = lines[len(lines)-1].end
@@ -227,6 +247,7 @@ func createBorderLines(coords []coord) []line {
 			newLineShort.start = start
 		}
 		newLineLong.start = newLineShort.start
+
 		if isHorizontal(edgeLine) {
 			newLineShort.end = coord{row: newLineShort.start.row}
 			newLineLong.end = newLineShort.end
@@ -255,6 +276,20 @@ func createBorderLines(coords []coord) []line {
 		}
 	}
 	return lines
+}
+
+func Part1(input []string) (string, error) {
+	coords := parseCoords(input)
+	maxArea := 0
+	for i := 0; i < len(coords)-1; i++ {
+		for j := i + 1; j < len(coords); j++ {
+			area := area(coords[i], coords[j])
+			if area > maxArea {
+				maxArea = area
+			}
+		}
+	}
+	return fmt.Sprintf("%d", maxArea), nil
 }
 
 func Part2(input []string) (string, error) {

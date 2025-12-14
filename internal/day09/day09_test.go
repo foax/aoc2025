@@ -270,22 +270,19 @@ func TestGetLinesForBox(t *testing.T) {
 	tests := map[string]struct {
 		x        coord
 		y        coord
-		expected [4]line
+		expected []line
 	}{
 		"1": {
 			x: coord{0, 6},
 			y: coord{2, 6},
-			expected: [4]line{
-				{coord{0, 6}, coord{0, 6}},
-				{coord{2, 6}, coord{2, 6}},
-				{coord{0, 6}, coord{2, 6}},
+			expected: []line{
 				{coord{0, 6}, coord{2, 6}},
 			},
 		},
 		"2": {
 			x: coord{0, 6},
 			y: coord{2, 9},
-			expected: [4]line{
+			expected: []line{
 				{coord{0, 6}, coord{0, 9}},
 				{coord{2, 6}, coord{2, 9}},
 				{coord{0, 6}, coord{2, 6}},
@@ -295,7 +292,7 @@ func TestGetLinesForBox(t *testing.T) {
 		"3": {
 			x: coord{0, 6},
 			y: coord{4, 5},
-			expected: [4]line{
+			expected: []line{
 				{coord{0, 5}, coord{0, 6}},
 				{coord{4, 5}, coord{4, 6}},
 				{coord{0, 5}, coord{4, 5}},
@@ -307,7 +304,7 @@ func TestGetLinesForBox(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			assert := assert.New(t)
 			got := getLinesForBox(test.x, test.y)
-			assert.Equal(test.expected, got)
+			assert.ElementsMatch(test.expected, got)
 		})
 	}
 
