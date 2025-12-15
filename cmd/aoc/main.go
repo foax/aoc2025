@@ -26,7 +26,7 @@ const (
 	aoc_edition     = "aoc2025"
 )
 
-type PartSolver func([]string) (string, error)
+type PartSolver func(*slog.Logger, []string) (string, error)
 
 var days = map[int][]PartSolver{
 	1: {day01.Part1, day01.Part2},
@@ -42,7 +42,7 @@ var days = map[int][]PartSolver{
 
 func main() {
 	var logLevel slog.Level
-	logLevelFlag := flag.String("loglevel", "INFO", "Log level to use for output")
+	logLevelFlag := flag.String("loglevel", "error", "Log level to use for output")
 	flag.Parse()
 	switch strings.ToLower(*logLevelFlag) {
 	case "debug":
@@ -112,7 +112,7 @@ func main() {
 	for partIdx, part := range day {
 		partNum := partIdx + 1
 		logger.Info("Solving", "day", dayNum, "part", partNum)
-		result, err := part(input)
+		result, err := part(logger, input)
 		if err != nil {
 			logger.Error("Error solving", "day", dayNum, "part", partNum, "error", err)
 			os.Exit(1)

@@ -1,6 +1,8 @@
 package day03
 
 import (
+	"io"
+	"log/slog"
 	"strings"
 	"testing"
 
@@ -33,24 +35,26 @@ func TestGetMaxJoltage(t *testing.T) {
 
 func TestPart1(t *testing.T) {
 	assert := assert.New(t)
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	input := `987654321111111
 811111111111119
 234234234234278
 818181911112111`
 	want := "357"
-	got, err := Part1(strings.Split(input, "\n"))
+	got, err := Part1(logger, strings.Split(input, "\n"))
 	assert.NoError(err)
 	assert.Equal(want, got)
 }
 
 func TestPart2(t *testing.T) {
 	assert := assert.New(t)
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	input := `987654321111111
 811111111111119
 234234234234278
 818181911112111`
 	want := "3121910778619"
-	got, err := Part2(strings.Split(input, "\n"))
+	got, err := Part2(logger, strings.Split(input, "\n"))
 	assert.NoError(err)
 	assert.Equal(want, got)
 }

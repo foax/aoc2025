@@ -2,6 +2,7 @@ package day08
 
 import (
 	"fmt"
+	"log/slog"
 	"sort"
 	"strconv"
 	"strings"
@@ -16,7 +17,7 @@ func distance(a, b [3]int) (x int) {
 	return
 }
 
-func Part1(input []string) (string, error) {
+func Part1(logger *slog.Logger, input []string) (string, error) {
 	return part1Inner(input, 1000)
 }
 
@@ -88,7 +89,7 @@ func part1Inner(input []string, circuitConnect int) (string, error) {
 	return fmt.Sprintf("%d", total), nil
 }
 
-func Part2(input []string) (string, error) {
+func Part2(logger *slog.Logger, input []string) (string, error) {
 	circuits := make(map[int]map[[3]int]struct{})
 	coords := make([][3]int, len(input))
 	coordCircuits := make(map[[3]int]int)

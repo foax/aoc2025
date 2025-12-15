@@ -1,6 +1,8 @@
 package day02
 
 import (
+	"io"
+	"log/slog"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -118,18 +120,20 @@ func TestIsInvalidIdPart2(t *testing.T) {
 
 func TestPart1(t *testing.T) {
 	assert := assert.New(t)
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	input := []string{"11-22,95-115,998-1012,1188511880-1188511890,222220-222224,1698522-1698528,446443-446449,38593856-38593862,565653-565659,824824821-824824827,2121212118-2121212124"}
 	want := "1227775554"
-	got, err := Part1(input)
+	got, err := Part1(logger, input)
 	assert.NoError(err)
 	assert.Equal(want, got)
 }
 
 func TestPart2(t *testing.T) {
 	assert := assert.New(t)
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	input := []string{"11-22,95-115,998-1012,1188511880-1188511890,222220-222224,1698522-1698528,446443-446449,38593856-38593862,565653-565659,824824821-824824827,2121212118-2121212124"}
 	want := "4174379265"
-	got, err := Part2(input)
+	got, err := Part2(logger, input)
 	assert.NoError(err)
 	assert.Equal(want, got)
 }

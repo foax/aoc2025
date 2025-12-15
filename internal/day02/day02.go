@@ -2,6 +2,7 @@ package day02
 
 import (
 	"fmt"
+	"log/slog"
 	"strconv"
 	"strings"
 )
@@ -74,7 +75,7 @@ func isInvalidIdPart2(id int) bool {
 	return false
 }
 
-func Part1(input []string) (string, error) {
+func Part1(logger *slog.Logger, input []string) (string, error) {
 	var invalidIds []int
 	for _, r := range strings.Split(input[0], ",") {
 		idStrs := strings.Split(r, "-")
@@ -94,7 +95,7 @@ func Part1(input []string) (string, error) {
 	return fmt.Sprintf("%d", sum), nil
 }
 
-func Part2(input []string) (string, error) {
+func Part2(logger *slog.Logger, input []string) (string, error) {
 	var invalidIds []int
 	for _, r := range strings.Split(input[0], ",") {
 		idStrs := strings.Split(r, "-")

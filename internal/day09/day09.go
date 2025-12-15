@@ -278,7 +278,8 @@ func createBorderLines(coords []coord) []line {
 	return lines
 }
 
-func Part1(input []string) (string, error) {
+func Part1(logger *slog.Logger, input []string) (string, error) {
+	logger = logger.With("part", 1)
 	coords := parseCoords(input)
 	maxArea := 0
 	for i := 0; i < len(coords)-1; i++ {
@@ -292,10 +293,11 @@ func Part1(input []string) (string, error) {
 	return fmt.Sprintf("%d", maxArea), nil
 }
 
-func Part2(input []string) (string, error) {
+func Part2(logger *slog.Logger, input []string) (string, error) {
+	logger = logger.With("part", 2)
 	coords := parseCoords(input)
 	borderLines := createBorderLines(coords)
-	slog.Debug("part 2", "msg", "borderLines created", "len", len(borderLines))
+	logger.Debug("borderLines created", "len", len(borderLines))
 
 	horizontalLines := make(map[int][]line)
 	verticalLines := make(map[int][]line)
@@ -313,21 +315,21 @@ func Part2(input []string) (string, error) {
 			verticalLines[l.start.col] = append(verticalLines[l.start.col], l)
 		}
 	}
-	slog.Debug("part 2", "msg", "horizontal and vertical lines grouped")
+	logger.Debug("horizontal and vertical lines grouped")
 
 	for idx := range horizontalLines {
 		sort.Slice(horizontalLines[idx], func(i, j int) bool {
 			return horizontalLines[idx][i].start.col < horizontalLines[idx][j].start.col
 		})
 	}
-	slog.Debug("part 2", "msg", "horizontalLines sorted")
+	logger.Debug("horizontalLines sorted")
 
 	for idx := range verticalLines {
 		sort.Slice(verticalLines[idx], func(i, j int) bool {
 			return verticalLines[idx][i].start.row < verticalLines[idx][j].start.row
 		})
 	}
-	slog.Debug("part 2", "msg", "verticalLines sorted")
+	logger.Debug("verticalLines sorted")
 
 	maxArea := 0
 	for i := range coords {

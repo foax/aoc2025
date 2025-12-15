@@ -2,6 +2,7 @@ package day07
 
 import (
 	"fmt"
+	"log/slog"
 	"strings"
 )
 
@@ -23,7 +24,7 @@ func countBeamOptions(grid []string, cache map[[2]int]int, startCoord [2]int) in
 	return 1
 }
 
-func Part1(input []string) (string, error) {
+func Part1(logger *slog.Logger, input []string) (string, error) {
 	manifold := make([][]rune, len(input))
 	splitCount := 0
 	for row, line := range input {
@@ -59,7 +60,7 @@ func Part1(input []string) (string, error) {
 	return fmt.Sprintf("%d", splitCount), nil
 }
 
-func Part2(input []string) (string, error) {
+func Part2(logger *slog.Logger, input []string) (string, error) {
 	cache := make(map[[2]int]int)
 	count := countBeamOptions(input, cache, [2]int{0, strings.Index(input[0], "S")})
 	return fmt.Sprintf("%d", count), nil

@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-func Part1(input []string) (string, error) {
+func Part1(logger *slog.Logger, input []string) (string, error) {
 	var dialPos int = 50
 	zeroCount := 0
 	for _, line := range input {
@@ -19,16 +19,17 @@ func Part1(input []string) (string, error) {
 	return fmt.Sprintf("%d", zeroCount), nil
 }
 
-func Part2(input []string) (string, error) {
+func Part2(logger *slog.Logger, input []string) (string, error) {
+	logger = logger.With("part", 2)
 	var dialPos int = 50
 	zeroCount := 0
 	var zeroes int
-	slog.Debug("Part 2 init", "dialPos", dialPos, "zeroCount", zeroCount)
+	logger.Debug("init", "dialPos", dialPos, "zeroCount", zeroCount)
 	for _, line := range input {
 		turns, _ := strconv.Atoi(line[1:])
 		dialPos, zeroes = turnDial(dialPos, rune(line[0]), turns, 100)
 		zeroCount += zeroes
-		slog.Debug("Part 2 turn", "direction", string(rune(line[0])), "turns", turns, "dialPos", dialPos, "zeroes", zeroes, "zeroCount", zeroCount)
+		logger.Debug("turn", "direction", string(rune(line[0])), "turns", turns, "dialPos", dialPos, "zeroes", zeroes, "zeroCount", zeroCount)
 	}
 	return fmt.Sprintf("%d", zeroCount), nil
 }

@@ -1,6 +1,9 @@
 package day04
 
-import "fmt"
+import (
+	"fmt"
+	"log/slog"
+)
 
 func checkNeighbours(grid [][]rune, x, y int) (total int) {
 	height := len(grid)
@@ -18,7 +21,7 @@ func checkNeighbours(grid [][]rune, x, y int) (total int) {
 	return
 }
 
-func Part1(input []string) (string, error) {
+func Part1(logger *slog.Logger, input []string) (string, error) {
 	total := 0
 	grid := make([][]rune, len(input))
 	for y, line := range input {
@@ -41,7 +44,7 @@ func Part1(input []string) (string, error) {
 	return fmt.Sprintf("%d", total), nil
 }
 
-func Part2(input []string) (string, error) {
+func Part2(logger *slog.Logger, input []string) (string, error) {
 	total := 0
 	grid := make([][]rune, len(input))
 	for y, line := range input {

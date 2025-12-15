@@ -1,6 +1,8 @@
 package day08
 
 import (
+	"io"
+	"log/slog"
 	"strings"
 	"testing"
 
@@ -36,8 +38,9 @@ func TestPart1Inner(t *testing.T) {
 	assert.Equal(want, got)
 }
 
-func TestPart2Inner(t *testing.T) {
+func TestPart2(t *testing.T) {
 	assert := assert.New(t)
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	input := `162,817,812
 57,618,57
 906,360,560
@@ -60,7 +63,7 @@ func TestPart2Inner(t *testing.T) {
 425,690,689`
 
 	want := "25272"
-	got, err := Part2(strings.Split(input, "\n"))
+	got, err := Part2(logger, strings.Split(input, "\n"))
 	assert.NoError(err)
 	assert.Equal(want, got)
 }

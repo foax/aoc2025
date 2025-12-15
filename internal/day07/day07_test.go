@@ -1,6 +1,8 @@
 package day07
 
 import (
+	"io"
+	"log/slog"
 	"strings"
 	"testing"
 
@@ -9,6 +11,7 @@ import (
 
 func TestPart1(t *testing.T) {
 	assert := assert.New(t)
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	input := `.......S.......
 ...............
 .......^.......
@@ -27,13 +30,14 @@ func TestPart1(t *testing.T) {
 ...............`
 
 	want := "21"
-	got, err := Part1(strings.Split(input, "\n"))
+	got, err := Part1(logger, strings.Split(input, "\n"))
 	assert.NoError(err)
 	assert.Equal(want, got)
 }
 
 func TestPart2(t *testing.T) {
 	assert := assert.New(t)
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	input := `.......S.......
 ...............
 .......^.......
@@ -52,7 +56,7 @@ func TestPart2(t *testing.T) {
 ...............`
 
 	want := "40"
-	got, err := Part2(strings.Split(input, "\n"))
+	got, err := Part2(logger, strings.Split(input, "\n"))
 	assert.NoError(err)
 	assert.Equal(want, got)
 }

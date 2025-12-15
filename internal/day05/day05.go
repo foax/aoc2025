@@ -12,7 +12,8 @@ func inRange(x int, r [2]int) bool {
 	return x >= r[0] && x <= r[1]
 }
 
-func Part1(input []string) (string, error) {
+func Part1(logger *slog.Logger, input []string) (string, error) {
+	logger = logger.With("part", 1)
 	var ids []int
 	var ranges [][2]int
 
@@ -48,7 +49,7 @@ func Part1(input []string) (string, error) {
 	idIdx := 0
 	freshTotal := 0
 	for idIdx < len(ids) {
-		slog.Debug("part 1 id loop", "idIdx", idIdx, "rangeIdx", rangeIdx)
+		logger.Debug("id loop", "idIdx", idIdx, "rangeIdx", rangeIdx)
 		if ids[idIdx] < ranges[rangeIdx][0] {
 			idIdx++
 			continue
@@ -67,7 +68,8 @@ func Part1(input []string) (string, error) {
 	return fmt.Sprintf("%d", freshTotal), nil
 }
 
-func Part2(input []string) (string, error) {
+func Part2(logger *slog.Logger, input []string) (string, error) {
+	logger = logger.With("part", 2)
 	var ranges [][2]int
 	for _, line := range input {
 		if line == "" {

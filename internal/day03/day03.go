@@ -1,6 +1,9 @@
 package day03
 
-import "strconv"
+import (
+	"log/slog"
+	"strconv"
+)
 
 func getMaxJoltage(bank string, batteries int) (total int) {
 	bankInt := make([]int, len(bank))
@@ -35,7 +38,7 @@ func getMaxJoltage(bank string, batteries int) (total int) {
 	return
 }
 
-func Part1(input []string) (string, error) {
+func Part1(logger *slog.Logger, input []string) (string, error) {
 	total := 0
 	for _, bank := range input {
 		total += getMaxJoltage(bank, 2)
@@ -43,7 +46,7 @@ func Part1(input []string) (string, error) {
 	return strconv.Itoa(total), nil
 }
 
-func Part2(input []string) (string, error) {
+func Part2(logger *slog.Logger, input []string) (string, error) {
 	total := 0
 	for _, bank := range input {
 		total += getMaxJoltage(bank, 12)

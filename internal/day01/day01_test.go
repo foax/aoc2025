@@ -1,6 +1,8 @@
 package day01
 
 import (
+	"io"
+	"log/slog"
 	"strings"
 	"testing"
 
@@ -125,6 +127,7 @@ func TestTurnDial(t *testing.T) {
 
 func TestPart1(t *testing.T) {
 	assert := assert.New(t)
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	input := `L68
 L30
 R48
@@ -136,13 +139,14 @@ L99
 R14
 L82`
 	want := "3"
-	got, err := Part1(strings.Split(input, "\n"))
+	got, err := Part1(logger, strings.Split(input, "\n"))
 	assert.NoError(err)
 	assert.Equal(want, got)
 }
 
 func TestPart2(t *testing.T) {
 	assert := assert.New(t)
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	input := `L68
 L30
 R48
@@ -155,7 +159,7 @@ R14
 L82`
 
 	want := "6"
-	got, err := Part2(strings.Split(input, "\n"))
+	got, err := Part2(logger, strings.Split(input, "\n"))
 	assert.NoError(err)
 	assert.Equal(want, got)
 }

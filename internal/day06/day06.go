@@ -2,11 +2,12 @@ package day06
 
 import (
 	"fmt"
+	"log/slog"
 	"strconv"
 	"strings"
 )
 
-func Part1(input []string) (string, error) {
+func Part1(logger *slog.Logger, input []string) (string, error) {
 	problems := make([][]int, len(input)-1)
 	operators := make([]rune, len(strings.Fields(input[0])))
 	totals := make([]int, len(input[0]))
@@ -49,7 +50,7 @@ func Part1(input []string) (string, error) {
 	return fmt.Sprintf("%d", total), nil
 }
 
-func Part2(input []string) (string, error) {
+func Part2(logger *slog.Logger, input []string) (string, error) {
 	type operator struct {
 		op  rune
 		col int
