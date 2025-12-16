@@ -19,6 +19,7 @@ import (
 	"github.com/foax/aoc2025/internal/day07"
 	"github.com/foax/aoc2025/internal/day08"
 	"github.com/foax/aoc2025/internal/day09"
+	"github.com/foax/aoc2025/internal/day10"
 )
 
 const (
@@ -29,15 +30,16 @@ const (
 type PartSolver func(*slog.Logger, []string) (string, error)
 
 var days = map[int][]PartSolver{
-	1: {day01.Part1, day01.Part2},
-	2: {day02.Part1, day02.Part2},
-	3: {day03.Part1, day03.Part2},
-	4: {day04.Part1, day04.Part2},
-	5: {day05.Part1, day05.Part2},
-	6: {day06.Part1, day06.Part2},
-	7: {day07.Part1, day07.Part2},
-	8: {day08.Part1, day08.Part2},
-	9: {day09.Part1, day09.Part2},
+	1:  {day01.Part1, day01.Part2},
+	2:  {day02.Part1, day02.Part2},
+	3:  {day03.Part1, day03.Part2},
+	4:  {day04.Part1, day04.Part2},
+	5:  {day05.Part1, day05.Part2},
+	6:  {day06.Part1, day06.Part2},
+	7:  {day07.Part1, day07.Part2},
+	8:  {day08.Part1, day08.Part2},
+	9:  {day09.Part1, day09.Part2},
+	10: {day10.Part1, day10.Part2},
 }
 
 func main() {
